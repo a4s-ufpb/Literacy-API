@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.deleteChallenge = exports.getChallenge = exports.getChallenges = exports.updateChallege = exports.addChallenge = undefined;
+exports.deleteChallenge = exports.getChallengeByContext = exports.getChallenge = exports.getChallenges = exports.updateChallege = exports.addChallenge = undefined;
 
 var _express = require('express');
 
@@ -29,10 +29,17 @@ var crypto = require('crypto');
 var addChallenge = exports.addChallenge = function addChallenge(req, res) {
     var image = saveImageChallenge(req.body.image, req);
     var word = req.body.word;
-    var sound = req.body.sound;
     var video = req.body.video;
     var context = req.body.context;
     // const author = req.body.author
+    var sound = "";
+
+    if (req.body.sound_base64) {
+        sound = saveAudioContext(req.body.sound_base64, req);
+    } else {
+        sound = req.body.sound;
+    }
+
     var data = { word: word,
         image: image, sound: sound,
         video: video, contextId: context, authorId: req.user.id };
@@ -46,9 +53,16 @@ var addChallenge = exports.addChallenge = function addChallenge(req, res) {
 var updateChallege = exports.updateChallege = function updateChallege(req, res) {
     var image = saveImageChallenge(req.body.image, req);
     var word = req.body.word;
-    var sound = req.body.sound;
     var video = req.body.video;
     var context = req.body.context;
+    var sound = "";
+
+    if (req.body.sound_base64) {
+        sound = saveAudioContext(req.body.sound_base64, req);
+    } else {
+        sound = req.body.sound;
+    }
+
     var data = { word: word,
         image: image, sound: sound,
         video: video, contextId: context };
@@ -83,6 +97,17 @@ var getChallenge = exports.getChallenge = function getChallenge(req, res) {
     _challenge.Challenge.findById(id, RULE_PRESENT_CHALLENGE).then(function (challenge) {
         if (challenge) {
             res.status(_httpStatusCodes2.default.OK).json(challenge).send();
+        } else {
+            res.status(_httpStatusCodes2.default.NOT_FOUND).json(responseNotFoundChallenge()).send();
+        }
+    });
+};
+
+var getChallengeByContext = exports.getChallengeByContext = function getChallengeByContext(req, res) {
+    var id = req.params.id;
+    _challenge.Challenge.findAll({ where: { contextId: id } }).then(function (result) {
+        if (result) {
+            res.status(_httpStatusCodes2.default.OK).json(result).send();
         } else {
             res.status(_httpStatusCodes2.default.NOT_FOUND).json(responseNotFoundChallenge()).send();
         }
@@ -128,6 +153,16 @@ function saveImageChallenge(codeBase64, req) {
     return (0, _server.getAbsoluteUri)(req) + BASE_URL_CONTEXT_IMAGE + imageName;
 }
 
+function saveAudioContext(codeBase64, req) {
+    if (!codeBase64) return null;
+    var buffer = new Buffer(codeBase64, 'base64');
+    var audioExtension = fileType(buffer).ext;
+    var audioName = generateContextName();
+    audioName = audioName + '.' + audioExtension;
+    fs.writeFileSync(BASE_DIR_AUDIO_CONTEXT + audioName, buffer);
+    return (0, _server.getAbsoluteUri)(req) + BASE_URL_AUDIO_CONTEXT + audioName;
+}
+
 function generateChallengeName() {
     while (true) {
         var currentDate = new Date().valueOf().toString();
@@ -141,3 +176,6 @@ function generateChallengeName() {
 
 var BASE_URL_CONTEXT_IMAGE = '/static/images/';
 var BASE_URL_CONTEXT = 'public/images/';
+
+var BASE_URL_AUDIO_CONTEXT = '/static/sounds/';
+var BASE_DIR_AUDIO_CONTEXT = 'public/sounds/';

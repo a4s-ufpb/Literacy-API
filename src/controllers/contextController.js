@@ -10,14 +10,23 @@ import {getAbsoluteUri} from '../server.js'
 export const addContext = (req, res) => {
     const image = saveImageContext(req.body.image, req)
     const name = req.body.name
-    const sound = req.body.sound
     const video = req.body.video
+    var sound = "";
+
+    if(req.body.sound_base64){
+        sound = saveAudioContext(req.body.sound_base64, req)
+    }else{
+        sound = req.body.sound
+    }
+
     // const author = req.body.author
-    let data = {name: name, 
-                    sound: sound, 
-                    video: video,
-                    image: image,
-                    authorId: req.user.id}
+    let data = {
+                name: name, 
+                sound: sound, 
+                video: video,
+                image: image,
+                authorId: req.user.id
+                }
     Context.create(data).then((context) => {
         res.status(HttpStatus.CREATED).json(context).send()
     }).catch((error) => {
@@ -34,8 +43,15 @@ export const updateContext = (req, res) => {
         if(context){
             const image = saveImageContext(req.body.image, req)
             const name = req.body.name
-            const sound = req.body.sound
             const video = req.body.video
+            var sound = "";
+
+            if(req.body.sound_base64){
+                sound = saveAudioContext(req.body.sound_base64, req)
+            }else{
+                sound = req.body.sound
+            }
+
             const data = {name: name, 
                 sound: sound, 
                 video: video, 
@@ -111,6 +127,17 @@ function saveImageContext(codeBase64, req){
     return getAbsoluteUri(req) + BASE_URL_CONTEXT_IMAGE + imageName
 }
 
+function saveAudioContext(codeBase64, req){
+    if(!codeBase64) return null;
+    let buffer = new Buffer(codeBase64, 'base64')
+    let audioExtension = fileType(buffer).ext
+    let audioName = generateContextName()
+    audioName = audioName + '.' + audioExtension
+    fs.writeFileSync(BASE_DIR_AUDIO_CONTEXT + audioName, buffer)
+    return getAbsoluteUri(req) + BASE_URL_AUDIO_CONTEXT + audioName
+}
+
+
 function generateContextName(){
     while(true){
         let currentDate = (new Date()).valueOf().toString()
@@ -126,3 +153,6 @@ function generateContextName(){
 
 const BASE_URL_CONTEXT_IMAGE = '/static/images/'
 const BASE_URL_CONTEXT = 'public/images/'
+
+const BASE_URL_AUDIO_CONTEXT = '/static/sounds/'
+const BASE_DIR_AUDIO_CONTEXT = 'public/sounds/'

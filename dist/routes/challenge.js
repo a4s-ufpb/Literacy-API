@@ -27,4 +27,6 @@ router.route('/').post(controller.addChallenge).get(controller.getChallenges);
 
 router.route('/:id/').put(controller.updateChallege).get(controller.getChallenge).delete(controller.deleteChallenge);
 
+router.route('/:id/context/').get(controller.getChallengeByContext);
+
 exports.default = router;

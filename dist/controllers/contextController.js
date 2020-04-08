@@ -27,14 +27,23 @@ var crypto = require('crypto');
 var addContext = exports.addContext = function addContext(req, res) {
     var image = saveImageContext(req.body.image, req);
     var name = req.body.name;
-    var sound = req.body.sound;
     var video = req.body.video;
+    var sound = "";
+
+    if (req.body.sound_base64) {
+        sound = saveAudioContext(req.body.sound_base64, req);
+    } else {
+        sound = req.body.sound;
+    }
+
     // const author = req.body.author
-    var data = { name: name,
+    var data = {
+        name: name,
         sound: sound,
         video: video,
         image: image,
-        authorId: req.user.id };
+        authorId: req.user.id
+    };
     _context.Context.create(data).then(function (context) {
         res.status(_httpStatusCodes2.default.CREATED).json(context).send();
     }).catch(function (error) {
@@ -49,8 +58,15 @@ var updateContext = exports.updateContext = function updateContext(req, res) {
         if (context) {
             var image = saveImageContext(req.body.image, req);
             var name = req.body.name;
-            var sound = req.body.sound;
             var video = req.body.video;
+            var sound = "";
+
+            if (req.body.sound_base64) {
+                sound = saveAudioContext(req.body.sound_base64, req);
+            } else {
+                sound = req.body.sound;
+            }
+
             var data = { name: name,
                 sound: sound,
                 video: video,
@@ -120,6 +136,16 @@ function saveImageContext(codeBase64, req) {
     return (0, _server.getAbsoluteUri)(req) + BASE_URL_CONTEXT_IMAGE + imageName;
 }
 
+function saveAudioContext(codeBase64, req) {
+    if (!codeBase64) return null;
+    var buffer = new Buffer(codeBase64, 'base64');
+    var audioExtension = fileType(buffer).ext;
+    var audioName = generateContextName();
+    audioName = audioName + '.' + audioExtension;
+    fs.writeFileSync(BASE_DIR_AUDIO_CONTEXT + audioName, buffer);
+    return (0, _server.getAbsoluteUri)(req) + BASE_URL_AUDIO_CONTEXT + audioName;
+}
+
 function generateContextName() {
     while (true) {
         var currentDate = new Date().valueOf().toString();
@@ -133,3 +159,6 @@ function generateContextName() {
 
 var BASE_URL_CONTEXT_IMAGE = '/static/images/';
 var BASE_URL_CONTEXT = 'public/images/';
+
+var BASE_URL_AUDIO_CONTEXT = '/static/sounds/';
+var BASE_DIR_AUDIO_CONTEXT = 'public/sounds/';

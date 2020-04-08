@@ -11,10 +11,17 @@ import {getAbsoluteUri} from '../server.js'
 export const addChallenge = (req, res) => {
     const image = saveImageChallenge(req.body.image, req)
     const word = req.body.word
-    const sound = req.body.sound
     const video = req.body.video
     const context = req.body.context
     // const author = req.body.author
+    var sound = "";
+
+    if(req.body.sound_base64){
+        sound = saveAudioContext(req.body.sound_base64, req)
+    }else{
+        sound = req.body.sound
+    }
+
     const data = {word: word, 
                 image: image, sound: sound, 
                 video: video, contextId: context, authorId: req.user.id}
@@ -30,9 +37,16 @@ export const addChallenge = (req, res) => {
 export const updateChallege = (req, res) => {
     const image = saveImageChallenge(req.body.image, req)
     const word = req.body.word
-    const sound = req.body.sound
     const video = req.body.video
     const context = req.body.context
+    var sound = "";
+
+    if(req.body.sound_base64){
+        sound = saveAudioContext(req.body.sound_base64, req)
+    }else{
+        sound = req.body.sound
+    }
+
     const data = {word: word, 
         image: image, sound: sound, 
         video: video, contextId: context}
@@ -127,6 +141,17 @@ function saveImageChallenge(codeBase64, req){
     return getAbsoluteUri(req) + BASE_URL_CONTEXT_IMAGE + imageName
 }
 
+
+function saveAudioContext(codeBase64, req){
+    if(!codeBase64) return null;
+    let buffer = new Buffer(codeBase64, 'base64')
+    let audioExtension = fileType(buffer).ext
+    let audioName = generateContextName()
+    audioName = audioName + '.' + audioExtension
+    fs.writeFileSync(BASE_DIR_AUDIO_CONTEXT + audioName, buffer)
+    return getAbsoluteUri(req) + BASE_URL_AUDIO_CONTEXT + audioName
+}
+
 function generateChallengeName(){
     while(true){
         let currentDate = (new Date()).valueOf().toString()
@@ -142,3 +167,6 @@ function generateChallengeName(){
 
 const BASE_URL_CONTEXT_IMAGE = '/static/images/'
 const BASE_URL_CONTEXT = 'public/images/'
+
+const BASE_URL_AUDIO_CONTEXT = '/static/sounds/'
+const BASE_DIR_AUDIO_CONTEXT = 'public/sounds/'
