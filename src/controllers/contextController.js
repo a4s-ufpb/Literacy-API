@@ -1,26 +1,21 @@
-import express from 'express'
 import HttpStatus from 'http-status-codes'
 import {Context} from '../models/context'
 import {User} from '../models/user'
-const fs = require('fs')
-const fileType = require('file-type')
-const crypto = require('crypto');
-import {getAbsoluteUri} from '../server.js'
+import { saveImage, saveAudio } from '../utils/save'
 
 export const addContext = (req, res) => {
-    const image = saveImageContext(req.body.image, req)
+    const image = saveImage(req.body.image, req)
     const name = req.body.name
     const video = req.body.video
     var sound = "";
 
     if(req.body.sound_base64){
-        sound = saveAudioContext(req.body.sound_base64, req)
+        sound = saveAudio(req.body.sound_base64, req)
     }else{
         sound = req.body.sound
     }
 
-    // const author = req.body.author
-    let data = {
+    var data = {
                 name: name, 
                 sound: sound, 
                 video: video,
@@ -41,21 +36,24 @@ export const updateContext = (req, res) => {
     const id = req.params.id
     Context.findById(id).then((context) => {
         if(context){
-            const image = saveImageContext(req.body.image, req)
+            const image = saveImage(req.body.image, req)
             const name = req.body.name
             const video = req.body.video
             var sound = "";
 
             if(req.body.sound_base64){
-                sound = saveAudioContext(req.body.sound_base64, req)
+                sound = saveAudio(req.body.sound_base64, req)
             }else{
                 sound = req.body.sound
             }
 
-            const data = {name: name, 
+            const data = {
+                name: name, 
                 sound: sound, 
                 video: video, 
-                image:image}
+                image:image
+            }
+            
             context.update(data).then(() => {
                 res.status(HttpStatus.OK).json(context).send()
             }).catch((error) => {
@@ -105,6 +103,10 @@ export const deleteContext = (req, res) => {
     })
 }
 
+export const getUserContext =(req, res) => {
+    
+}
+
 function responseErroCatch(code){
     let erro = {error: HttpStatus.getStatusText(code)}
     return erro
@@ -117,42 +119,5 @@ function responseNotFoundContext(){
 const CONTEXT_NOT_FOUND = "contexto not found"
 const ATTRIBUTES_EXCLUDE_USER = ['password', 'createdAt', 'updatedAt']
 
-function saveImageContext(codeBase64, req){
-    if(!codeBase64) return null;
-    let buffer = new Buffer(codeBase64, 'base64')
-    let imageExtension = fileType(buffer).ext
-    let imageName = generateContextName()
-    imageName = imageName + '.' + imageExtension
-    fs.writeFileSync(BASE_URL_CONTEXT + imageName, buffer)
-    return getAbsoluteUri(req) + BASE_URL_CONTEXT_IMAGE + imageName
-}
-
-function saveAudioContext(codeBase64, req){
-    if(!codeBase64) return null;
-    let buffer = new Buffer(codeBase64, 'base64')
-    let audioExtension = fileType(buffer).ext
-    let audioName = generateContextName()
-    audioName = audioName + '.' + audioExtension
-    fs.writeFileSync(BASE_DIR_AUDIO_CONTEXT + audioName, buffer)
-    return getAbsoluteUri(req) + BASE_URL_AUDIO_CONTEXT + audioName
-}
 
 
-function generateContextName(){
-    while(true){
-        let currentDate = (new Date()).valueOf().toString()
-        let random = Math.random().toString()
-        let contextName = crypto.createHash('md5')
-                        .update(currentDate + random)
-                        .digest('hex');
-        if(!fs.existsSync(BASE_URL_CONTEXT + contextName)){
-            return contextName
-        }
-    }
-}
-
-const BASE_URL_CONTEXT_IMAGE = '/static/images/'
-const BASE_URL_CONTEXT = 'public/images/'
-
-const BASE_URL_AUDIO_CONTEXT = '/static/sounds/'
-const BASE_DIR_AUDIO_CONTEXT = 'public/sounds/'
