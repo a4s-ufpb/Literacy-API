@@ -2,14 +2,14 @@ FROM node:10.21
 
 WORKDIR /usr/app
 
-COPY package.json ./
-CMD ["npm", "cache", "clean", "--force"]
-RUN npm install
 COPY . .
+
+CMD ["npm", "cache", "clean", "--force"]
+
+RUN npm install
 
 EXPOSE 9000
 
-CMD ["npm", "run", "build"]
+RUN npm run build
+
 CMD ["npm", "start"]
-
-
