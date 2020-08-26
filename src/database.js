@@ -6,8 +6,8 @@ import Sequelize from 'sequelize'
 //     storage: './data.sqlite'
 // })
 
-export let sequelize = new Sequelize('literacy', process.env.DB_USER || 'postgres', process.env.DB_PASSWORD || 'postgres', {
-    host: 'localhost',
+export let sequelize = new Sequelize('literacy', process.env.DB_USER || 'postgres', process.env.DB_PASSWORD || '8HdQy7vkai6B34', {
+    host: 'db',
     port: '5432',
     dialect: 'postgres',
     operatorsAliases: false
