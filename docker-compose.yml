@@ -1,0 +1,36 @@
+version: '3.5'
+
+services:
+
+    literacy-api:
+        container_name: literacy-api
+        build:
+            context: .
+        restart: always
+        ports:
+            - "9000:9000"
+        networks:
+            - literacy-api-network
+        depends_on:
+            - db
+
+    db:
+        container_name: postgres-literacy-api
+        image: postgres:12.3
+        restart: always
+        networks:
+            - literacy-api-network
+        volumes:
+            - postgres-literacy-api:/data/postgres
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: 8HdQy7vkai6B34
+            POSTGRES_DB: literacy
+            PGDATA: /data/postgres
+
+volumes:
+    postgres-literacy-api:
+
+networks: 
+    literacy-api-network:
+        driver: bridge
