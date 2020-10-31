@@ -1,14 +1,14 @@
 FROM node:10.21
 
-WORKDIR /usr/app
+COPY . ./literacy-api
 
-COPY . .
+WORKDIR /literacy-api
 
 CMD ["npm", "cache", "clean", "--force"]
 
 RUN npm install
 
-EXPOSE 9000
+EXPOSE 8083
 
 RUN npm run build
 

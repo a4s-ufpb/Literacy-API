@@ -1,0 +1,39 @@
+version: '3.5'
+
+services:
+
+  literacy_api:
+    container_name: literacy_api
+    image: a4sufpb/literacy_api:2.1.1
+    restart: always
+    ports:
+      - "8083:8083"
+    networks:
+      - literacy_api-network
+    depends_on:
+      - db
+    env_file:
+      - .env
+
+  db:
+    container_name: postgres-literacy_api
+    image: postgres:12.3
+    restart: always
+    networks:
+      - literacy_api-network
+    volumes:
+      - literacy_api:/var/lib/postgresql/data
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
+      PGDATA: /var/lib/postgresql/data/pgdata
+
+volumes:
+  literacy_api:
+
+networks:
+  literacy_api-network:
+    driver: bridge

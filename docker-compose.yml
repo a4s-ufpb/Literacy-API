@@ -8,23 +8,29 @@ services:
             context: .
         restart: always
         ports:
-            - "9000:9000"
+            - "8083:8083"
         networks:
             - literacy-api-network
         depends_on:
             - db
+        env_file:
+            - .env
 
     db:
         container_name: postgres-literacy-api
         image: postgres:12.3
         restart: always
+        ports:
+            - "5432:5432"
         networks:
             - literacy-api-network
         volumes:
             - postgres-literacy-api:/data/postgres
+        env_file:
+            - .env
         environment:
             POSTGRES_USER: postgres
-            POSTGRES_PASSWORD: 8HdQy7vkai6B34
+            POSTGRES_PASSWORD: postgres
             POSTGRES_DB: literacy
             PGDATA: /data/postgres
 
@@ -34,3 +40,4 @@ volumes:
 networks: 
     literacy-api-network:
         driver: bridge
+

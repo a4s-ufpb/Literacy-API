@@ -1,3 +1,15 @@
 node_modules
 packege-lock.json
+.idea/
 dist
+.git/
+.github/
+.env
+.env.example
+.gitignore
+CONTRIBUTING.md
+docker-compose.yml
+docker-compose-prod.yml
+Dockerfile
+Procfile
+README.md
