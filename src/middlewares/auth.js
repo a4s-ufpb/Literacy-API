@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken'
 import HttpStatus from 'http-status-codes'
 
-export const SECRET_ENCODING_MESSAGE = 'literacy'
+export const SECRET_ENCODING_MESSAGE = process.env.JWT_TOKEN || 'literacy'
 const METHOD_AUTHORIZED = "GET"
 const PATH_AUTHORIZED = ""
 
